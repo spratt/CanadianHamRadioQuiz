@@ -109,7 +109,7 @@ class Question:
 
 if __name__ == "__main__":
     if len(argv) < 2:
-        print 'Usage: racquiz.py {quiz} [section]'
+        print 'Usage: chrq.py {quiz} [section]'
         print '{quiz}    := basic'
         print '           | basic_fr (français)'
         print '           | advanced'
