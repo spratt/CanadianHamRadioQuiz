@@ -7,7 +7,7 @@ if they want to get their qualification.
 To run the program, you must have Python (tested with 2.6.1 which is
 default on Mac Snow Leopard), and simply type:
 
-  ./chrq.py
+  ./chrq.py basic
 
 I'm trying to make the quiz bilingual, so don't hesitate to let me
 know if my French needs correction.
