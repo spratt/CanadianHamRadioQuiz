@@ -99,7 +99,7 @@ if __name__ == "__main__":
         print '           | advanced'
         print '           | advanced_fr (français)'
         print '[section] :='
-        print '           | (section)'
+        print '           | (sections, seperated by commas)'
         print '           | ? - list sections'
         exit()
 
@@ -123,7 +123,9 @@ if __name__ == "__main__":
     correct = 0
     for section in sections:
         asked += 1
-        if questions[section][randint(0,len(questions[section])-1)].ask(lang):
+        question = questions[section][randint(0,len(questions[section])-1)]
+        if question.ask(lang):
             correct += 1
-            print score[lang],"%1.0f%%" % (100 * float(correct) / float(asked))
-            print
+        print score[lang],"%1.0f%%" % (100 * float(correct) / float(asked)),
+        print '(%d/%d)' % (correct,asked)
+        print
