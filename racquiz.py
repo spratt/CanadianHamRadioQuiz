@@ -44,7 +44,7 @@ class Question:
     """A class to hold a question, including answers, correct answer and hint"""
     
     def ask(self,lang):
-        print self.text
+        print self.section+'-'+self.subsection+'-'+self.number,self.text
         for answer in self.answers:
             print answer
         reply = raw_input(prompt[lang])
@@ -95,27 +95,35 @@ if __name__ == "__main__":
     if len(argv) < 2:
         print 'Usage: racquiz.py {quiz} [section]'
         print '{quiz}    := basic'
-        print '           | basic_fr'
+        print '           | basic_fr (français)'
         print '           | advanced'
-        print '           | advanced_fr'
+        print '           | advanced_fr (français)'
         print '[section] :='
         print '           | (section)'
-        print '           | ? - lists sections'
+        print '           | ? - list sections'
         exit()
 
     lang = 'en'
-    if argv[0][-3] == '_':
-        lang = argv[0][-2:]
+    if argv[1][-3] == '_':
+        lang = argv[1][-2:]
 
     Question.parse(argv[1] + '.txt')
 
     sections = questions.keys()
     sections.sort()
+
+    if len(argv) > 2:
+        wanted = argv[2]
+        if wanted[0] == '?':
+            for section in sections:
+                print section
+            exit()
+        sections = wanted.split(',')
     asked = 0
     correct = 0
     for section in sections:
         asked += 1
         if questions[section][randint(0,len(questions[section])-1)].ask(lang):
             correct += 1
-        print score[lang],"%1.0f%%" % (100 * float(correct) / float(asked))
-        print
+            print score[lang],"%1.0f%%" % (100 * float(correct) / float(asked))
+            print
