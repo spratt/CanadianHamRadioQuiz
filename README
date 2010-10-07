@@ -1,0 +1,23 @@
+Canadian Ham Radio Quiz
+
+This project started because the standard tools for studying for the
+Industry Canada exam are windows based, and *nix users are out of luck
+if they want to get their qualification.
+
+To run the program, you must have Python (tested with 2.6.1 which is
+default on Mac Snow Leopard), and simply type:
+
+  ./chrq.py
+
+I'm trying to make the quiz bilingual, so don't hesitate to let me
+know if my French needs correction.
+
+Contact Info
+
+Simon David Pratt
+me@simondavidpratt.com
+
+TODO
+
+ o need to write French documentation
+ o need to verify accuracy of the French prompts
