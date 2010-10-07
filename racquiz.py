@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-# RAC Quiz v0.1
+# RAC Quiz v0.2
 # Written by Simon Pratt
 # This program takes a question bank in the format used by exHAMiner and
 # quizzes the user with questions and answers from the bank.
@@ -10,99 +10,112 @@
 
 import io
 from sys import argv
+from random import randint
 
-if len(argv) < 2:
-    print 'Usage: racquiz.py {quiz} [section]'
-    print '{quiz} := basic'
-    print '        | basic_fr'
-    print '        | advanced'
-    print '        | advanced_fr'
-    print '[section] :='
-    print '           | (section number)'
-    print '           | ? - lists section numbers'
-    exit()
-
+################################################################################
 # Internationalization
 # For now, English and French.
+################################################################################
+
 prompt = {'en':'Your answer: ','fr':'Ta réponse: '}
 congrats = {'en':'Correct.','fr':'Correcte.'}
 correction = {'en':'The correct answer was:','fr':'La réponse correcte était:'}
 score = {'en':'Your score:','fr':'Ta score:'}
 
-def isAnswer(line):
-    # takes a line of input, and returns:
-    # true  - if the line is an answer (i.e. begins with 1,2,3 or 4)
-    # false - otherwise
-    c = line[0]
-    return c == '1' or c == '2' or c == '3' or c == '4'
+################################################################################
+# Data Structures
+################################################################################
 
-with open(argv[1] + '.txt') as file:
-    # determine the language
+questions = dict()
+
+################################################################################
+# Functions
+################################################################################
+
+def isQuestion(line):
+    """takes a line of input and returns true if that line is a question"""
+    return line != '' and (line[0] == 'A' or line[0] == 'B')
+
+################################################################################
+# Classes
+################################################################################
+
+class Question:
+    """A class to hold a question, including answers, correct answer and hint"""
+    
+    def ask(self,lang):
+        print self.text
+        for answer in self.answers:
+            print answer
+        reply = raw_input(prompt[lang])
+        if reply[0] == self.correct:
+            print congrats[lang]
+        else:
+            print correction[lang],self.correct
+            print self.hint
+        print
+        return reply[0] == self.correct
+
+    @staticmethod
+    def parse(filename):
+        with open(filename) as file:
+            line = file.readline()
+            while line != '':
+                # strip leading and trailing whitespace
+                line = line.strip()
+                
+                # if not the beginning of a question, skip to next line
+                if not isQuestion(line):
+                    line = file.readline()
+                    continue
+
+                q = Question()
+                q.text = line[line.find(')')+2:]
+                q.section, q.subsection, q.number = line[2:line.find(' ')].split('-')
+                if len(q.subsection) == 1:
+                    q.subsection = "0" + q.subsection
+                q.correct = line[line.find('(')+1:line.find(')')]
+                q.answers = []
+                q.answers.append(file.readline().strip())
+                q.answers.append(file.readline().strip())
+                q.answers.append(file.readline().strip())
+                q.answers.append(file.readline().strip())
+                q.hint = (file.readline().strip())[2:]
+
+                # Save the question
+                key = q.section + '-' + q.subsection
+                if not key in questions:
+                    questions[key] = []
+                questions[key].append(q)
+
+                # read in next line and begin again
+                line = file.readline()
+                
+if __name__ == "__main__":
+    if len(argv) < 2:
+        print 'Usage: racquiz.py {quiz} [section]'
+        print '{quiz}    := basic'
+        print '           | basic_fr'
+        print '           | advanced'
+        print '           | advanced_fr'
+        print '[section] :='
+        print '           | (section)'
+        print '           | ? - lists sections'
+        exit()
+
     lang = 'en'
-    if argv[1][-3] == '_':
-        lang = argv[1][-2:]
-    # set up some variables
-    single_section = False
-    correct = None
-    answer = None
-    questions = 0
-    wrong = 0
-    # if the user specified a section
-    if len(argv) > 2:
-        # if the user wants a list of sections
-        if argv[2] == '?':
-            for line in file:
-                if line[0] == '{':
-                    print line,
-            exit()
-        # otherwise, skip to the section
-        single_section = True
-        for line in file:
-            if line[0] == '{' and line[:5].strip('{L}') == argv[2]:
-                print line[line.find('}')+2:]
-                break
-    for line in file:
-        if line[0] == 'B' or line[0] == 'A':
-            # Question, in the format:
-            # V-www-x-y (z) Question String
-            # Where:
-            #  V   - either B (basic) or A (advanced)
-            #  www - indicates the section
-            #  x   - indicates the part
-            #  y   - indicates the question number
-            #  z   - indicates the number of the correct answer
-            print line[line.find(')')+2:],
-            correct = line[line.find('(')+1]
-        elif line[0] == '{':
-            # Module heading, in the format:
-            # {Lxyz} Module Title
-            # Where:
-            #  xy - indicates the number of the section
-            #  z  - is an optional letter indicating a subsection
-            if single_section:
-                exit()
-            print line[line.find('}')+2:]
-        elif isAnswer(line):
-            print line,
-        elif line[0] == '>':
-            # Hint
-            # Since this always follows a question and its possible answers,
-            # I can now ask the user for their answer
-            questions = questions + 1
-            answer = raw_input(prompt[lang])
-            if correct == answer[0]:
-                print
-                print congrats[lang],
-            else:
-                wrong = wrong + 1
-                print
-                print line[2:]
-                print correction[lang],correct,'. ',
-            print score[lang],
-            print '%.2f%%' % ((float(questions)-float(wrong))*100/float(questions))
-            print
-        elif line[0] == '^':
-            # File header, in the format:
-            # ^ Qualification ^ Number of Questions ^ Pass Mark ^
-            parts = line.split('^ ')
-            print parts[1]
+    if argv[0][-3] == '_':
+        lang = argv[0][-2:]
+
+    Question.parse(argv[1] + '.txt')
+
+    sections = questions.keys()
+    sections.sort()
+    asked = 0
+    correct = 0
+    for section in sections:
+        asked += 1
+        if questions[section][randint(0,len(questions[section])-1)].ask(lang):
+            correct += 1
+        print score[lang],"%1.0f%%" % (100 * float(correct) / float(asked))
+        print
