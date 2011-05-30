@@ -54,11 +54,19 @@ def isQuestion(line):
 
 class Question:
     """A class to hold a question, including answers, correct answer and hint"""
+
+    def get_question_number(self):
+        return self.section+'-'+self.subsection+'-'+self.number
     
-    def ask(self,lang):
-        print self.section+'-'+self.subsection+'-'+self.number,self.text
+    def print_question(self):
+        print self.get_question_number()
+        print self.text
         for answer in self.answers:
             print answer
+        return self.correct
+    
+    def ask(self,lang):
+        self.print_question()
         reply = raw_input(prompt[lang])
         if reply[0] == self.correct:
             print congrats[lang]
